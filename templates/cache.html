@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Create New Cache
+{% endblock %}
+
+{% block main %}
+    <form action="/create-cache" method="post">
+        <div class="mb-3">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="cache" placeholder="Enter cache name" type="text">
+        </div>
+        <div class="mb-3">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="ttl" placeholder="Enter TTL in seconds" type="number">
+        </div>
+        <button class="btn btn-primary" type="submit">Create Cache</button>
+    </form>
+{% endblock %}

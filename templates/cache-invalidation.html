@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Invalidate Cache
+{% endblock %}
+
+{% block main %}
+    <form action="/cache-invalidation" method="post">
+        <div class="mb-3">
+            <select class="form-select mx-auto w-auto" name="cache">
+                <option disabled selected value="">Select Cache</option>
+                {% for item in cache %}
+                    <option value="{{ item['cache'] }}">{{ item['cache'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="key" placeholder="Enter cache key" type="text">
+        </div>
+        <button class="btn btn-primary" type="submit">Invalidate Cache-Key</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block main %}
+    <h2></h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Cache</th>
+                <th>TTL</th>
+                <th>#Objects</th>
+                <th>Add Cache Item</th>
+                <th>Clear Cache</th>
+                <th>View Cache</th>
+                <th>Delete Cache</th>
+                <th>Toggle Cache</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- TODO: Loop through the database entries to display them in this table -->
+            {% for item in cache %}
+            <tr>
+                <td>{{ item["cache"] }}</td>
+                <td>{{ item["ttl"] }}</td>
+                <td>{{ len(item["objects"]) }}</td>
+                <td>
+                    <form action="/set-cache" method="get">
+                        <input name="cache_name" type="hidden" value="{{ item['cache'] }}">
+                        <button class="btn btn-link" style="text-decoration: none;" data-bs-custom-class="custom-tooltip" data-toggle="tooltip" data-placement="bottom" title="Add item to cache" type="submit">Add Cache</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/clear-cache" method="post">
+                        <input name="cache_name" type="hidden" value="{{ item['cache'] }}">
+                        <button class="btn btn-link" style="text-decoration: none;" data-bs-custom-class="custom-tooltip" data-toggle="tooltip" data-placement="top" title="Delete all cached objects" type="submit">Clear Cache</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/view-cache" method="post">
+                        <input name="cache_name" type="hidden" value="{{ item['cache'] }}">
+                        <button class="btn btn-link" style="text-decoration: none;" data-bs-custom-class="custom-tooltip" data-toggle="tooltip" data-placement="top" title="View all cached items" type="submit">View Cache</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/remove-cache" method="post">
+                        <input name="cache_id" type="hidden" value="{{ item['id'] }}">
+                        <button class="btn btn-link" style="text-decoration: none;" data-bs-custom-class="custom-tooltip" type="submit" data-toggle="tooltip" data-placement="top" title="Delete from database">Delete Cache</button>
+                    </form>
+                </td>
+                <td>
+                    {% if item["isEnabled"] %}
+                        <div class="form-check form-switch center-toggle">
+                            <form action="/toggle-cache" method="post">
+                                <input name="cache" type="hidden" value="{{ item['cache'] }}">
+                                <input name="toggle" class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" onclick="this.form.submit();" checked>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="form-check form-switch center-toggle">
+                            <form action="/toggle-cache" method="post">
+                                <input name="cache" type="hidden" value="{{ item['cache'] }}">
+                                <input name="toggle" class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" onclick="this.form.submit();">
+                            </form>
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

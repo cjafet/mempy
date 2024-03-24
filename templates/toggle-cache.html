@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Set Cache
+{% endblock %}
+
+{% block main %}
+    <form action="/toggle-cache" method="post">
+        <div class="mb-3">
+            <select class="form-select mx-auto w-auto" name="cache">
+                <option disabled selected value="">Select Cache</option>
+                {% for item in cache %}
+                    {% if item['cache'] == cache_name  %}
+                    <option value="{{ item['cache'] }}" selected>{{ item['cache'] }}</option>
+                    {% else %}
+                    <option value="{{ item['cache'] }}">{{ item['cache'] }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit">Toggle Cache</button>
+    </form>
+{% endblock %}

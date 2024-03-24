@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    App Settings
+{% endblock %}
+
+{% block main %}
+<div class="row mb-3">
+    <hr/>
+    <div class="col-md-1"></div>
+    <div class="col-md-2">Current Username:</div>
+    <div class="col-md-4">
+        {{ username }}
+    </div>
+</div>
+<div class="row">
+    <hr/>
+    <div class="col-md-1"></div>
+    <div class="col-md-2">Current ApiKey:</div>
+    <div class="col-md-4">
+        <input autocomplete="off" autofocus class="form-control col-md-auto mb-3" name="key" type="text" value="{{ api_key }}" disabled>
+    </div>
+    <hr/>
+</div>
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-2">Reset ApiKey:</div>
+    <div class="col-md-4">
+        <form action="/app-settings" method="post">
+            <input name="user_id" type="hidden" value="{{ user_id }}">
+            <button class="btn btn-primary mb-3" type="submit">Reset API_KEY</button>
+        </form>
+    </div>
+    <hr/>
+</div>
+{% endblock %}
