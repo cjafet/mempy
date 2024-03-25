@@ -1,5 +1,5 @@
 # Mempy InMemory Data Store
-#### Video Demo:  <URL HERE>
+#### Video Demo:  [Mempy](https://www.youtube.com/watch?v=Oy6zvRpPX9g)
 #### Description:
 Mempy is an in-memory data store used by applications that need to offload database access by storing all values in memory for fast access of frequently used data. Mempy can also be used as a NoSql database.
 
@@ -102,6 +102,31 @@ Mempy makes use of sqlite to store the name and configuration of the cache objec
 
 ```
 sqlite3 finance.db
+```
+
+## Database schemas
+
+```
+CREATE TABLE users (
+id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+username TEXT NOT NULL UNIQUE, 
+hash TEXT NOT NULL, 
+api_key TEXT NOT NULL);
+
+
+CREATE UNIQUE INDEX username ON users (username);
+
+
+CREATE TABLE user_cache (
+id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+cache_name TEXT NOT NULL UNIQUE, 
+ttl INTEGER NOT NULL, 
+user_id INTEGER NOT NULL,
+FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+
+CREATE UNIQUE INDEX cache_name ON user_cache (cache_name);
 ```
 
 # Running Mempy
