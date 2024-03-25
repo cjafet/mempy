@@ -12,7 +12,7 @@ import json
 import time
 
 
-def cache_enabled(f):
+def is_cache_enabled(f):
     """
     Decorate routes to require login.
 

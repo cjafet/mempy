@@ -1,4 +1,4 @@
-from helpers import cache_enabled, api_key_required, build_error_message, build_error_message_with_detail, handle_ttl
+from helpers import is_cache_enabled, api_key_required, build_error_message, build_error_message_with_detail, handle_ttl
 from constants import NOT_FOUND, NOT_FOUND_MESSAGE, BAD_REQUEST, BAD_REQUEST_MESSAGE_INVALID_KEY, BAD_REQUEST_MESSAGE_KEY_EXISTS, SERVER_ERROR, SERVER_ERROR_MESSAGE
 from flask import Flask, request
 from flask import Blueprint
@@ -12,7 +12,7 @@ apis = Blueprint('apis', __name__)
 
 @apis.route("/api/set-cache", methods=["POST"])
 @api_key_required
-@cache_enabled
+@is_cache_enabled
 def add_cache_api():
     """Add new item to the selected cache object"""
     req = json.loads(request.data)
@@ -38,15 +38,12 @@ def add_cache_api():
 
 @apis.route("/api/get-cache", methods=["GET"])
 @api_key_required
-@cache_enabled
+@is_cache_enabled
 def cache_api():
     """Get cache item from cache key and cache name"""
+    
     cache = request.args.get("cache")
-
     key = request.args.get("key")
-    # Check if key is not empty
-    if not key:
-        return build_error_message(400, BAD_REQUEST, BAD_REQUEST_MESSAGE_INVALID_KEY, "/api/get-cache")
 
     # Handle when user has no cache yet
     if not USER_CACHE:
@@ -63,12 +60,15 @@ def cache_api():
         print(USER_CACHE)
         for item in USER_CACHE:
             if item["cache"] == cache:
-                for obj in item["objects"]:
-                    if obj["key"] == key:
-                        print(obj["value"])
-                        return obj["value"]
-                # Return error message if no key found
-                return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
+                if not key:
+                    return item["objects"]
+                else:
+                    for obj in item["objects"]:
+                        if obj["key"] == key:
+                            print(obj["value"])
+                            return obj["value"]
+                    # Return error message if no key found
+                    return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
         return build_error_message_with_detail(404, NOT_FOUND, NOT_FOUND_MESSAGE, "Cache " + cache + " not found.", "/api/get-cache")
     except (ValueError, TypeError):
             return build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/api/get-cache")
@@ -76,7 +76,7 @@ def cache_api():
 
 @apis.route("/api/cache-invalidation", methods=["GET"])
 @api_key_required
-@cache_enabled
+@is_cache_enabled
 def invalidate_cache_api():
     """API to Invalidate cache key"""
     cache = request.args.get("cache")
