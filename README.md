@@ -101,7 +101,7 @@ curl --location --request GET 'http://127.0.0.1:7777/api/cache-invalidation?cach
 Mempy makes use of sqlite to store the name and configuration of the cache objects created by the user so that it can have the cache object ready to be used on every system startup. As of any cache system, all cache items are deleted on system restart or when TTL expires, but not the cache objects where users can save items to it. Run the following command to create the database:
 
 ```
-sqlite3 finance.db
+sqlite3 mempy.db
 ```
 
 ## Database schemas
