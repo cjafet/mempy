@@ -129,7 +129,6 @@ def register():
 
         hash = generate_password_hash(password)
         db.execute("INSERT INTO users (username, hash, api_key) VALUES (?, ?, ?)", username, hash, str(uuid.uuid4()))
-        db.execute("INSERT INTO application (api_key) VALUES (?)", str(uuid.uuid4()))
         return redirect("/login")
     else:
         return render_template("register.html")
