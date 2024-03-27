@@ -57,18 +57,19 @@ def index():
 def login():
     """Log user in"""
 
-    # Forget any user_id
-    session.clear()
-
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
         # Ensure username was submitted
-        if not request.form.get("username"):
+        username = request.form.get("username")
+        # Check if username is not empty
+        if not username:
             flash('Enter a valid username')
             return redirect("/login")
 
         # Ensure password was submitted
-        elif not request.form.get("password"):
+        password = request.form.get("password")
+        # Check if username is not empty
+        if not password:
             flash('Enter your password')
             return redirect("/login")
 
