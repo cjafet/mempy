@@ -46,7 +46,14 @@ def index():
 
     # Get user_cache from database
     # user_cache = cursor.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
-    rows = conn.execute("SELECT * FROM users WHERE username = ?", (request.form.get("username"),))
+    username = request.form.get("username")
+    print(f"Looking for username: '{username}'")
+
+    if not username:
+        print("No username provided!")
+        return
+
+    rows = conn.execute("SELECT * FROM users WHERE username = ?", (username,))
     caches = rows.fetchall()
     print("user_cache", caches)
 
@@ -82,12 +89,12 @@ def login():
             return redirect("/login")
 
         # Query database for username
-        rows = cursor.execute(
+        row = conn.execute(
             "SELECT * FROM users WHERE username = ?", 
             (request.form.get("username"),)  # Note the comma after the value
         )
         # rows = cursor.fetchall()
-        user = cursor.fetchone()
+        user = row.fetchone()
         print("logged user:", user)
 
         # Ensure username exists and password is correct
