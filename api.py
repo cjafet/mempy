@@ -19,9 +19,9 @@ def add_cache_api():
     print(req)
 
     # Handle ttl logic
-    for item in USER_CACHE:
-        if item["cache"] == req["cacheName"] and item["expiresOn"] < int(str(time.time()).split(".")[0]):
-            handle_ttl(item)
+    # for item in USER_CACHE:
+        # if item["cache"] == req["cacheName"] and item["expiresOn"] < int(str(time.time()).split(".")[0]):
+            # handle_ttl(item)
 
     for item in USER_CACHE:
         if item["cache"] == req["cacheName"]:
