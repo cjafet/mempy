@@ -49,15 +49,6 @@ def index():
     user_cache = rows.fetchall()
     print("user_cache", user_cache)
 
-    if not username:
-        print("No username provided!")
-        flash('Enter a valid username')
-        return redirect("/login")
-
-    rows = conn.execute("SELECT * FROM users WHERE username = ?", (username,))
-    caches = rows.fetchall()
-    print("user_cache", caches)
-
     # Add cache to USER_CACHE
     if not USER_CACHE:
         for cache in caches:
