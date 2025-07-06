@@ -94,10 +94,10 @@ def login():
             return redirect("/login")
 
         # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        session["user_id"] = user["id"]
 
         # Add user ApiKey to session
-        session["api_key"] = rows[0]["api_key"]
+        session["api_key"] = user["api_key"]
 
         # Redirect user to home page
         return redirect("/")
