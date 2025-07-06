@@ -44,15 +44,17 @@ def index():
     print(USER_CACHE)
 
     # Get user_cache from database
-    user_cache = cursor.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
+    # user_cache = cursor.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
+    user_cache = cursor.execute("SELECT * FROM users WHERE username = ?", (request.form.get("username"),))
+    rows = cursor.fetchall()
     print("user_cache", user_cache)
 
     # Add cache to USER_CACHE
     if not USER_CACHE:
-        for item in user_cache:
-            expires = int(str(time.time()).split(".")[0]) + int(item["ttl"])
+        for row in rows:
+            expires = int(str(time.time()).split(".")[0]) + int(row["ttl"])
             print(expires)
-            cache_item = {"id": item["id"], "cache": item["cache_name"], "ttl": item["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
+            cache_item = {"id": row["id"], "cache": row["cache_name"], "ttl": row["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
             USER_CACHE.append(cache_item)
 
     return render_template("index.html", cache=USER_CACHE, len=len)
