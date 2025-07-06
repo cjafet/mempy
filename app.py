@@ -89,9 +89,8 @@ def login():
             return redirect("/login")
 
         # Query database for username
-        cursor.execute(
-            "SELECT * FROM users WHERE username = ?", (username),)
-        )
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        
         # rows = cursor.fetchall()
         user = cursor.fetchone()
         print("logged user:", user)
