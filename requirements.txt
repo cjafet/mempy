@@ -4,4 +4,3 @@ Flask-Session
 pytz
 requests
 gunicorn
-traceback
