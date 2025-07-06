@@ -45,9 +45,9 @@ def index():
     print(USER_CACHE)
 
     # Get user_cache from database
-    # user_cache = cursor.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
-    username = request.form.get("username")
-    print(f"Looking for username: '{username}'")
+    rows = db.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
+    user_cache = rows.fetchall()
+    print("user_cache", user_cache)
 
     if not username:
         print("No username provided!")
