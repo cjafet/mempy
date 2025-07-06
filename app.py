@@ -37,13 +37,13 @@ app.register_blueprint(apis)
 def index():
     # Load application api-keys
     if not API_KEY:
-        keys = db.execute("SELECT api_key FROM users")
+        keys = cursor.execute("SELECT api_key FROM users")
         for key in keys:
             API_KEY.append(key["api_key"])
     print(USER_CACHE)
 
     # Get user_cache from database
-    user_cache = db.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
+    user_cache = cursor.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
     print("user_cache", user_cache)
 
     # Add cache to USER_CACHE
@@ -78,7 +78,7 @@ def login():
             return redirect("/login")
 
         # Query database for username
-        rows = db.execute(
+        rows = cursor.execute(
             "SELECT * FROM users WHERE username = ?", request.form.get("username")
         )
 
@@ -114,7 +114,7 @@ def register():
             flash('Enter a valid username')
             return redirect("/register")
 
-        check_user = db.execute("SELECT username FROM users WHERE username = ?", username)
+        check_user = cursor.execute("SELECT username FROM users WHERE username = ?", username)
         if check_user:
             if check_user[0]["username"] == username:
                 flash('Username already exists!')
@@ -205,7 +205,8 @@ def remove_cache():
     for index,item in enumerate(USER_CACHE):
         if item["id"] == int(cache_id):
             # Remove cache from database
-            db.execute("DELETE FROM user_cache WHERE id = ?", cache_id)
+            cursor.execute("DELETE FROM user_cache WHERE id = ?", cache_id)
+            con.commit()
             # Remove cache from USER_CACHE
             USER_CACHE.pop(index)
 
