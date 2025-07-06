@@ -78,7 +78,7 @@ def login():
             return redirect("/login")
 
         # Query database for username
-        rows = cursor.execute(
+        rows = conn.execute(
             "SELECT * FROM users WHERE username = ?", request.form.get("username")
         )
 
