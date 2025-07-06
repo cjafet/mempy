@@ -38,8 +38,8 @@ app.register_blueprint(apis)
 def index():
     # Load application api-keys
     if not API_KEY:
-        rows = cursor.execute("SELECT api_key FROM users")
-        keys = cursor.fetchall()
+        rows = conn.execute("SELECT api_key FROM users")
+        keys = rows.fetchall()
         for key in keys:
             API_KEY.append(key["api_key"])
     print(USER_CACHE)
@@ -47,7 +47,7 @@ def index():
     # Get user_cache from database
     # user_cache = cursor.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
     rows = conn.execute("SELECT * FROM users WHERE username = ?", (request.form.get("username"),))
-    caches = cursor.fetchall()
+    caches = rows.fetchall()
     print("user_cache", caches)
 
     # Add cache to USER_CACHE
