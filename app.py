@@ -38,24 +38,24 @@ app.register_blueprint(apis)
 def index():
     # Load application api-keys
     if not API_KEY:
-        cursor = conn.execute("SELECT api_key FROM users")
-        rows = cursor.fetchall()
-        for key in rows:
+        rows = cursor.execute("SELECT api_key FROM users")
+        keys = cursor.fetchall()
+        for key in keys:
             API_KEY.append(key["api_key"])
     print(USER_CACHE)
 
     # Get user_cache from database
     # user_cache = cursor.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
-    cursor = conn.execute("SELECT * FROM users WHERE username = ?", (request.form.get("username"),))
-    rows = cursor.fetchall()
+    rows = conn.execute("SELECT * FROM users WHERE username = ?", (request.form.get("username"),))
+    caches = cursor.fetchall()
     print("user_cache", rows)
 
     # Add cache to USER_CACHE
     if not USER_CACHE:
-        for row in rows:
-            expires = int(str(time.time()).split(".")[0]) + int(row["ttl"])
+        for cache in caches:
+            expires = int(str(time.time()).split(".")[0]) + int(cache["ttl"])
             print(expires)
-            cache_item = {"id": row["id"], "cache": row["cache_name"], "ttl": row["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
+            cache_item = {"id": cache["id"], "cache": cache["cache_name"], "ttl": cache["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
             USER_CACHE.append(cache_item)
 
     return render_template("index.html", cache=USER_CACHE, len=len)
@@ -88,6 +88,7 @@ def login():
         )
         # rows = cursor.fetchall()
         user = cursor.fetchone()
+        print("logged user:", user)
 
         # Ensure username exists and password is correct
         if not user or not check_password_hash(
