@@ -79,7 +79,8 @@ def login():
 
         # Query database for username
         rows = conn.execute(
-            "SELECT * FROM users WHERE username = ?", request.form.get("username")
+            "SELECT * FROM users WHERE username = ?", 
+            (request.form.get("username"),)  # Note the comma after the value
         )
 
         # Ensure username exists and password is correct
