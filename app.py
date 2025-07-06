@@ -51,7 +51,8 @@ def index():
 
     if not username:
         print("No username provided!")
-        return
+        flash('Enter a valid username')
+        return redirect("/login")
 
     rows = conn.execute("SELECT * FROM users WHERE username = ?", (username,))
     caches = rows.fetchall()
@@ -89,10 +90,11 @@ def login():
             return redirect("/login")
 
         # Query database for username
-        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        rows = conn.execute("SELECT * FROM users WHERE username = ?", (username,))
+        print(rows)
         
         # rows = cursor.fetchall()
-        user = cursor.fetchone()
+        user = rows.fetchone()
         print("logged user:", user)
 
         # Ensure username exists and password is correct
