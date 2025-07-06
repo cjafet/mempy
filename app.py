@@ -82,6 +82,7 @@ def login():
             "SELECT * FROM users WHERE username = ?", 
             (request.form.get("username"),)  # Note the comma after the value
         )
+        rows = cursor.fetchall()
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(
