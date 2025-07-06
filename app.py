@@ -89,12 +89,11 @@ def login():
             return redirect("/login")
 
         # Query database for username
-        row = conn.execute(
-            "SELECT * FROM users WHERE username = ?", 
-            (request.form.get("username"),)  # Note the comma after the value
+        cursor.execute(
+            "SELECT * FROM users WHERE username = ?", (username),)
         )
         # rows = cursor.fetchall()
-        user = row.fetchone()
+        user = cursor.fetchone()
         print("logged user:", user)
 
         # Ensure username exists and password is correct
