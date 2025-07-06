@@ -92,7 +92,8 @@ def login():
         # Query database for username
         rows = conn.execute("SELECT * FROM users WHERE username = ?", (username,))
         user = rows.fetchone()
-        print(f"Result username: {user}")
+        user_dict = dict(user)
+        print(f"User data: {user_dict}")
 
         # Ensure username exists and password is correct
         if not user or not check_password_hash(
