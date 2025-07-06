@@ -96,17 +96,17 @@ def login():
         print(f"User data: {user_dict}")
 
         # Ensure username exists and password is correct
-        if not user or not check_password_hash(
-            user["hash"], request.form.get("password")
+        if not user_dict or not check_password_hash(
+            user_dict["hash"], request.form.get("password")
         ):
             flash('Invalid username and/or password')
             return redirect("/login")
 
         # Remember which user has logged in
-        session["user_id"] = user["id"]
+        session["user_id"] = user_dict["id"]
 
         # Add user ApiKey to session
-        session["api_key"] = user["api_key"]
+        session["api_key"] = user_dict["api_key"]
 
         # Redirect user to home page
         return redirect("/")
