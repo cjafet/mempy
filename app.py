@@ -168,7 +168,8 @@ def cache():
             return redirect("/create-cache")
         try:
             id = db.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", cache, ttl, session["user_id"])
-            print("sql insert", id)
+            print("sql insert id", id)
+            db.commit()
             expires = int(str(time.time()).split(".")[0]) + int(ttl)
             print(expires)
             USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
