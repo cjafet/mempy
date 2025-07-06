@@ -38,8 +38,9 @@ app.register_blueprint(apis)
 def index():
     # Load application api-keys
     if not API_KEY:
-        keys = cursor.execute("SELECT api_key FROM users")
-        for key in keys:
+        cursor.execute("SELECT api_key FROM users")
+        rows = cursor.fetchall()
+        for key in rows:
             API_KEY.append(key["api_key"])
     print(USER_CACHE)
 
