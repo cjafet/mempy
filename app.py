@@ -1,4 +1,6 @@
-from cs50 import SQL
+# from cs50 import SQL
+import sqlite3
+import traceback
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -17,7 +19,9 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///mempy.db")
+# db = SQL("sqlite:///mempy.db")
+conn = sqlite3.connect("mempy.db")
+cursor = conn.cursor()
 
 # Global user cache
 USER_CACHE = []
@@ -167,13 +171,19 @@ def cache():
             flash('TTL must be a positive value.')
             return redirect("/create-cache")
         try:
-            id = db.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", cache, ttl, session["user_id"])
-            print("sql insert id", id)
-            db.commit()
+            cursor.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", cache, ttl, session["user_id"])
+            con.commit()
             expires = int(str(time.time()).split(".")[0]) + int(ttl)
             print(expires)
             USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
             return redirect("/")
+        except sqlite3.Error as e:
+            print(f"SQLite error: {e}")
+            print(f"Error type: {type(e).__name__}")
+            conn.rollback()
+        except Exception as e:
+            print(f"General error: {e}")
+            print(f"Full traceback: {traceback.format_exc()}")
         except (ValueError, TypeError) as e:
             return build_error_message(400, BAD_REQUEST, e, "/create-cache")
     else:
