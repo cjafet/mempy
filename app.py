@@ -51,7 +51,7 @@ def index():
 
     # Add cache to USER_CACHE
     if not USER_CACHE:
-        for cache in caches:
+        for cache in user_cache:
             expires = int(str(time.time()).split(".")[0]) + int(cache["ttl"])
             print(expires)
             cache_item = {"id": cache["id"], "cache": cache["cache_name"], "ttl": cache["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
