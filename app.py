@@ -48,7 +48,7 @@ def index():
     # user_cache = cursor.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
     rows = conn.execute("SELECT * FROM users WHERE username = ?", (request.form.get("username"),))
     caches = cursor.fetchall()
-    print("user_cache", rows)
+    print("user_cache", caches)
 
     # Add cache to USER_CACHE
     if not USER_CACHE:
