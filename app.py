@@ -45,7 +45,7 @@ def index():
     print(USER_CACHE)
 
     # Get user_cache from database
-    rows = db.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
+    rows = conn.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
     user_cache = rows.fetchall()
     print("user_cache", user_cache)
 
