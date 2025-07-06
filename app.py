@@ -175,9 +175,11 @@ def cache():
             flash('TTL must be a positive value.')
             return redirect("/create-cache")
         try:
-            id = conn.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", (cache, ttl, session["user_id"],))
-            print("id", id)
+            id = conn.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", (cache, ttl, session["user_id"]))
             conn.commit()
+            print("id", id)
+            print(f"Insert successful. Rows affected: {id.rowcount}")
+            print(f"Last inserted ID: {id.lastrowid}")
             expires = int(str(time.time()).split(".")[0]) + int(ttl)
             print(expires)
             USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
