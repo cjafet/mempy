@@ -56,7 +56,7 @@ def api_key_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get('Api-Key')
-        session_keys = session.get('api_key')
+        session_keys = getattr(g, 'api_key', None)
         print("api_keys in session", session_keys)
         if not api_key:
             return {
