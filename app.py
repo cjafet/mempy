@@ -204,8 +204,8 @@ def cache():
             session.modified = True
             
             print(f"Added cache: {new_cache}")
-            print(f"USER_CACHE after append: {USER_CACHE}")
-            print(f"USER_CACHE length: {len(USER_CACHE)}")
+            print(f"USER_CACHE after append: {session['user_cache']}")
+            print(f"USER_CACHE length: {len(session['user_cache'])}")
             return redirect("/")
         # except sqlite3.Error as e:
             # print(f"SQLite error: {e}")
