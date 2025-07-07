@@ -16,6 +16,9 @@ app = Flask(__name__)
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_FILE_DIR"] = "./session_data"  # Specify directory
+app.config["SESSION_FILE_THRESHOLD"] = 50  # Max number of sessions
+app.config["SESSION_FILE_MODE"] = 0o600  # File permissions
 Session(app)
 
 # Configure CS50 Library to use SQLite database
