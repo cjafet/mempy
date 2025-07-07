@@ -42,20 +42,21 @@ def index():
         keys = rows.fetchall()
         for key in keys:
             API_KEY.append(key["api_key"])
-    print(USER_CACHE)
+    
+    print("USER_CACHE", USER_CACHE)
 
     # Get user_cache from database
-    rows = conn.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", (session["user_id"],))
-    user_cache = rows.fetchall()
-    print("user_cache", user_cache)
+    # rows = conn.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", (session["user_id"],))
+    # user_cache = rows.fetchall()
+    # print("user_cache", user_cache)
 
     # Add cache to USER_CACHE
-    if not USER_CACHE:
-        for cache in user_cache:
-            expires = int(str(time.time()).split(".")[0]) + int(cache["ttl"])
-            print(expires)
-            cache_item = {"id": cache["id"], "cache": cache["cache_name"], "ttl": cache["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
-            USER_CACHE.append(cache_item)
+    # if not USER_CACHE:
+        # for cache in user_cache:
+            # expires = int(str(time.time()).split(".")[0]) + int(cache["ttl"])
+            # print(expires)
+            # cache_item = {"id": cache["id"], "cache": cache["cache_name"], "ttl": cache["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
+            # USER_CACHE.append(cache_item)
 
     return render_template("index.html", cache=USER_CACHE, len=len)
 
