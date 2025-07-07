@@ -63,7 +63,7 @@ def api_key_required(f):
                 "error": BAD_REQUEST,
                 "message": "Missing Api-Key header.",
                 "path": "/api/cache-invalidation"}
-        if api_key not in session['api_key']:
+        if api_key not in session:
             return {
                 "timestamp": str(datetime.datetime.now()),
                 "status": 401,
