@@ -20,7 +20,7 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database
 # db = SQL("sqlite:///mempy.db")
-conn = sqlite3.connect("mempy.db")
+conn = sqlite3.connect("/app/mempy.db")
 conn.row_factory = sqlite3.Row  # This enables dictionary-like access
 cursor = conn.cursor()
 
