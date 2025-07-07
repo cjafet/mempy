@@ -442,8 +442,18 @@ def app_settings():
             return build_error_message(400, BAD_REQUEST, e, "/app-settings")
     else:
         # Redirect user to login form
-        result = conn.execute("SELECT api_key,username FROM users WHERE id= ?", (user_id))
-        return render_template("app-settings.html", api_key=result[0]["api_key"], user_id=user_id, username=result[0]["username"])
+        try:
+            result = conn.execute("SELECT api_key,username FROM users WHERE id= ?", (user_id))
+            user = result.fetchone()
+            user_dict = dict(user)
+            print(f"User data: {user_dict}")
+            return render_template("app-settings.html", api_key=user_dict["api_key"], user_id=user_id, username=user_dict["username"])
+        except sqlite3.Error as e:
+            print(f"SQLite error: {e}")
+            print(f"Error type: {type(e).__name__}")
+        except Exception as e:
+            print(f"General error: {e}")
+            print(f"Full traceback: {traceback.format_exc()}")
 
 
 @app.route("/toggle-cache", methods=["POST", "GET"])
