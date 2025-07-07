@@ -28,7 +28,8 @@ conn.row_factory = sqlite3.Row  # This enables dictionary-like access
 cursor = conn.cursor()
 
 # Global user cache
-session['user_cache'] = []#
+# Can not be used outside httpcontext
+# session['user_cache'] = []#
 
 # Global app api keys
 API_KEY = []
@@ -45,6 +46,9 @@ def index():
         keys = rows.fetchall()
         for key in keys:
             API_KEY.append(key["api_key"])
+    
+    if 'user_cache' not in session:
+                session['user_cache'] = []
     
     print("USER_CACHE", session['user_cache'])
 
@@ -188,6 +192,10 @@ def cache():
             print(expires)
             # USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
             # USER_CACHE.append({"cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
+            
+            if 'user_cache' not in session:
+                session['user_cache'] = []
+                
             new_cache = {"cache": cache, "objects": [], "isEnabled": True, "expiresOn": expires}
             # USER_CACHE.append(new_cache)
             session['user_cache'].append(new_cache)
