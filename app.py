@@ -25,7 +25,7 @@ conn.row_factory = sqlite3.Row  # This enables dictionary-like access
 cursor = conn.cursor()
 
 # Global user cache
-USER_CACHE = []
+session['user_cache'] = []#
 
 # Global app api keys
 API_KEY = []
@@ -43,7 +43,7 @@ def index():
         for key in keys:
             API_KEY.append(key["api_key"])
     
-    print("USER_CACHE", USER_CACHE)
+    print("USER_CACHE", session['user_cache'])
 
     # Get user_cache from database
     # rows = conn.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", (session["user_id"],))
@@ -58,7 +58,7 @@ def index():
             # cache_item = {"id": cache["id"], "cache": cache["cache_name"], "ttl": cache["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
             # USER_CACHE.append(cache_item)
 
-    return render_template("index.html", cache=USER_CACHE, len=len)
+    return render_template("index.html", cache=session['user_cache'], len=len)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -186,7 +186,11 @@ def cache():
             # USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
             # USER_CACHE.append({"cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
             new_cache = {"cache": cache, "objects": [], "isEnabled": True, "expiresOn": expires}
-            USER_CACHE.append(new_cache)
+            # USER_CACHE.append(new_cache)
+            session['user_cache'].append(new_cache)
+            
+            # Mark session as modified
+            session.modified = True
             
             print(f"Added cache: {new_cache}")
             print(f"USER_CACHE after append: {USER_CACHE}")
@@ -240,7 +244,7 @@ def clear_cache():
         flash('Enter a valid cache name')
         return redirect("/")
     
-    for item in USER_CACHE:
+    for item in session['user_cache']:
         if item["cache"] == cache_name:
             # Clear cache from USER_CACHE
             item["objects"] = []
@@ -262,11 +266,11 @@ def view_cache():
         return redirect("/")
 
     # Handle ttl logic
-    for item in USER_CACHE:
+    for item in session['user_cache']:
         if item["cache"] == cache_name and item["expiresOn"] < int(str(time.time()).split(".")[0]):
             handle_ttl(item)
     
-    for item in USER_CACHE:
+    for item in session['user_cache']:
         if item["cache"] == cache_name:
             # Return selected cache
             return jsonify(item["objects"]) 
@@ -297,25 +301,25 @@ def add_cache():
             return redirect("/set-cache")
 
         # Handle ttl logic
-        for item in USER_CACHE:
+        for item in session['user_cache']:
             if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
                 handle_ttl(item)
 
-        for item in USER_CACHE:
+        for item in session['user_cache']:
             if item["cache"] == cache:
                 for obj in item["objects"]:
                     print(obj["key"], key)
                     if obj["key"] == key:
                         return build_error_message(400, BAD_REQUEST, BAD_REQUEST_MESSAGE_KEY_EXISTS, "/set-cache")
 
-        for item in USER_CACHE:
+        for item in session['user_cache']:
             if item["cache"] == cache:
                 item["objects"].append({"key": key, "value": json.loads(value)})
         return redirect("/")
     else:
         # Redirect user to login form
         cache_name = request.args.get("cache_name")
-        return render_template("set-cache.html", cache=USER_CACHE, len=len, cache_name=cache_name)
+        return render_template("set-cache.html", cache=session['user_cache'], len=len, cache_name=cache_name)
 
 
 @app.route("/get-cache", methods=["GET", "POST"])
@@ -338,19 +342,19 @@ def search_cache():
             return redirect("/get-cache")
 
         # Handle when user has no cache yet
-        if not USER_CACHE:
+        if not session['user_cache']:
             flash('No cache found')
             return redirect("/")
 
         # Handle ttl logic
-        for item in USER_CACHE:
+        for item in session['user_cache']:
             if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
                 handle_ttl(item)
                 return json.dumps(build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/get-cache"))
 
         # Add to helper as get_cache
         try:
-            for item in USER_CACHE:
+            for item in session['user_cache']:
                 print("entering looping")
                 print(item["cache"] == cache)
                 if item["cache"] == cache and item["objects"]:
@@ -365,7 +369,7 @@ def search_cache():
             return json.dumps(build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/get-cache"))
     else:
         # Redirect user to login form
-        return render_template("get-cache.html", cache=USER_CACHE, len=len)
+        return render_template("get-cache.html", cache=session['user_cache'], len=len)
 
 
 @app.route("/cache-invalidation", methods=["GET", "POST"])
@@ -388,7 +392,7 @@ def invalidate_cache():
 
         # Add to helper as get_cache
         try:
-            for item in USER_CACHE:
+            for item in session['user_cache']:
                 if item["cache"] == cache and item["objects"]:
                     for index,obj in enumerate(item["objects"]):
                         if obj["key"] == key:
@@ -401,7 +405,7 @@ def invalidate_cache():
             return json.dumps(build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/cache-invalidation"))
     else:
         # Redirect user to login form
-        return render_template("cache-invalidation.html", cache=USER_CACHE, len=len)
+        return render_template("cache-invalidation.html", cache=session['user_cache'], len=len)
 
 
 @app.route("/app-settings", methods=["GET", "POST"])
@@ -432,7 +436,7 @@ def toggle_cache():
             return redirect("/")
         print(cache)
 
-        for item in USER_CACHE:
+        for item in session['user_cache']:
             if item["cache"] == cache:
                 if item["isEnabled"] == False:
                     item["isEnabled"] = True
