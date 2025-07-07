@@ -21,11 +21,12 @@ def is_cache_enabled(f):
     # from app import USER_CACHE
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        user_cache = getattr(g, 'user_cache', None)
         if request.method == "POST":
             req = json.loads(request.data)
             if "cacheName" in req and req["cacheName"] != "":
                 print(req["cacheName"])
-                for item in USER_CACHE:
+                for item in user_cache:
                     if item["cache"] == req["cacheName"]:
                         if item["isEnabled"] == False:
                             return build_error_message(503, SERVICE_UNAVAILABLE, SERVICE_UNAVAILABLE_MESSAGE, "/api/set-cache")
@@ -37,7 +38,7 @@ def is_cache_enabled(f):
             if not cache:
                 return build_error_message(400, BAD_REQUEST, "Missing cache param.", "/api/*")
             else:
-                for item in USER_CACHE:
+                for item in user_cache:
                     if item["cache"] == cache:
                         if item["isEnabled"] == False:
                             return build_error_message(503, SERVICE_UNAVAILABLE, SERVICE_UNAVAILABLE_MESSAGE, "/api/*")
