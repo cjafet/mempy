@@ -179,8 +179,6 @@ def cache():
             conn.commit()
             id = cursor.lastrowid
             print("id", id)
-            print(f"Insert successful. Rows affected: {id.rowcount}")
-            print(f"Last inserted ID: {id.lastrowid}")
             expires = int(str(time.time()).split(".")[0]) + int(ttl)
             print(expires)
             USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
