@@ -1,6 +1,6 @@
 from helpers import is_cache_enabled, api_key_required, build_error_message, build_error_message_with_detail, handle_ttl
 from constants import NOT_FOUND, NOT_FOUND_MESSAGE, BAD_REQUEST, BAD_REQUEST_MESSAGE_INVALID_KEY, BAD_REQUEST_MESSAGE_KEY_EXISTS, SERVER_ERROR, SERVER_ERROR_MESSAGE
-from flask import Flask, request, session
+from flask import Flask, request, session, g
 from flask import Blueprint
 import time
 import json
