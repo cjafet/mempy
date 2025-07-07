@@ -445,7 +445,7 @@ def app_settings():
     else:
         # Redirect user to login form
         try:
-            cursor = conn.execute("SELECT api_key,username FROM users WHERE id= ?", (session["user_id"]))
+            cursor = conn.execute("SELECT api_key,username FROM users WHERE id= ?", (int(session["user_id"])))
             user = cursor.fetchone()
             user_dict = dict(user)
             print(f"User dict: {user_dict}")
