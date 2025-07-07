@@ -178,12 +178,13 @@ def cache():
         try:
             # cursor = conn.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", (cache, ttl, session["user_id"]))
             # conn.commit()
-            print(f"Insert successful. Rows affected: {cursor.rowcount}")
-            id = cursor.lastrowid
-            print("id", id)
+            # print(f"Insert successful. Rows affected: {cursor.rowcount}")
+            # id = cursor.lastrowid
+            # print("id", id)
             expires = int(str(time.time()).split(".")[0]) + int(ttl)
             print(expires)
-            USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
+            # USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
+            USER_CACHE.append({"cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
             return redirect("/")
         # except sqlite3.Error as e:
             # print(f"SQLite error: {e}")
