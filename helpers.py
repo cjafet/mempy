@@ -56,6 +56,7 @@ def api_key_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get('Api-Key')
+        session_keys = session.get('api_key')
         if not api_key:
             return {
                 "timestamp": str(datetime.datetime.now()),
@@ -63,7 +64,7 @@ def api_key_required(f):
                 "error": BAD_REQUEST,
                 "message": "Missing Api-Key header.",
                 "path": "/api/cache-invalidation"}
-        if api_key not in session:
+        if api_key not in session_keys:
             return {
                 "timestamp": str(datetime.datetime.now()),
                 "status": 401,
