@@ -20,22 +20,9 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database
 # db = SQL("sqlite:///mempy.db")
-conn = sqlite3.connect("/app/mempy.db")
+conn = sqlite3.connect("mempy.db")
 conn.row_factory = sqlite3.Row  # This enables dictionary-like access
 cursor = conn.cursor()
-
-# Check which database file you're actually using
-# print(f"Database file: {conn.execute('PRAGMA database_list').fetchall()}")
-
-db_list = conn.execute('PRAGMA database_list').fetchall()
-print("Database connections:")
-for db in db_list:
-    print(f"  Name: {db['name']}, File: {db['file']}")
-
-# Also check the full path
-import os
-print(f"Current working directory: {os.getcwd()}")
-print(f"Database path: {os.path.abspath('mempy.db')}")
 
 # Global user cache
 USER_CACHE = []
