@@ -175,8 +175,8 @@ def cache():
             flash('TTL must be a positive value.')
             return redirect("/create-cache")
         try:
-            cursor = conn.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", (cache, ttl, session["user_id"]))
-            conn.commit()
+            # cursor = conn.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", (cache, ttl, session["user_id"]))
+            # conn.commit()
             print(f"Insert successful. Rows affected: {cursor.rowcount}")
             id = cursor.lastrowid
             print("id", id)
@@ -184,10 +184,10 @@ def cache():
             print(expires)
             USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
             return redirect("/")
-        except sqlite3.Error as e:
-            print(f"SQLite error: {e}")
-            print(f"Error type: {type(e).__name__}")
-            conn.rollback()
+        # except sqlite3.Error as e:
+            # print(f"SQLite error: {e}")
+            # print(f"Error type: {type(e).__name__}")
+            # conn.rollback()
         except Exception as e:
             print(f"General error: {e}")
             print(f"Full traceback: {traceback.format_exc()}")
