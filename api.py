@@ -11,14 +11,21 @@ apis = Blueprint('apis', __name__)
 
 
 @apis.route("/api/set-cache", methods=["POST"])
-@api_key_required
 @is_cache_enabled
 def add_cache_api():
     """Add new item to the selected cache object"""
     req = json.loads(request.data)
     print(req)
     # Get API key from session and store in g
-    g.api_key = session.get('api_key')
+    api_keys = session.get('api_key')
+    print("api keys from set-cache", api_keys)
+    g.api_key = api_keys
+
+    @api_key_required
+    def handle_request(api_keys):
+        return f"Processing with API key: {api_key}"
+
+    handle_request()
 
     # Handle ttl logic
     # for item in USER_CACHE:
