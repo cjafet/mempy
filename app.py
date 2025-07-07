@@ -108,6 +108,8 @@ def login():
 
         # Remember which user has logged in
         session["user_id"] = user_dict["id"]
+        print(f"user_id value: {session.get("user_id")}")
+        print(f"user_id type: {type(session.get("user_id"))}")
 
         # Add user ApiKey to session
         session["api_key"] = user_dict["api_key"]
