@@ -52,6 +52,7 @@ def index():
             session['api_key'].append(key["api_key"])
     
     print("USER_CACHE", session['user_cache'])
+    print("API_KEYS", session['api_key'])
 
     # Get user_cache from database
     # rows = conn.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", (session["user_id"],))
