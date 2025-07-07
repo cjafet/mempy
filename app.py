@@ -430,6 +430,9 @@ def app_settings():
     """Create a new user cache"""
 
     user_id = session.get("user_id")
+    print(f"user_id value: {user_id}")
+    print(f"user_id type: {type(user_id)}")
+    
     if request.method == "POST":
         try:
             id = conn.execute("UPDATE users SET api_key = ? WHERE id = ?", (str(uuid.uuid4()), user_id))
