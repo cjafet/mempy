@@ -50,10 +50,6 @@ def index():
         keys = rows.fetchall()
         for key in keys:
             session['api_key'].append(key["api_key"])
-
-    if 'user_cache' not in session:
-        session['user_cache'] = []
-    
     
     print("USER_CACHE", session['user_cache'])
 
