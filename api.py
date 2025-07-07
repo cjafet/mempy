@@ -1,6 +1,6 @@
 from helpers import is_cache_enabled, api_key_required, build_error_message, build_error_message_with_detail, handle_ttl
 from constants import NOT_FOUND, NOT_FOUND_MESSAGE, BAD_REQUEST, BAD_REQUEST_MESSAGE_INVALID_KEY, BAD_REQUEST_MESSAGE_KEY_EXISTS, SERVER_ERROR, SERVER_ERROR_MESSAGE
-from flask import Flask, request
+from flask import Flask, request, session
 from flask import Blueprint
 import time
 import json
@@ -17,6 +17,8 @@ def add_cache_api():
     """Add new item to the selected cache object"""
     req = json.loads(request.data)
     print(req)
+    # Get API key from session and store in g
+    g.api_key = session.get('api_key')
 
     # Handle ttl logic
     # for item in USER_CACHE:
