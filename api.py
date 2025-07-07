@@ -5,7 +5,7 @@ from flask import Blueprint
 import time
 import json
 
-from app import USER_CACHE
+# from app import USER_CACHE
 
 apis = Blueprint('apis', __name__)
 
@@ -23,7 +23,7 @@ def add_cache_api():
         # if item["cache"] == req["cacheName"] and item["expiresOn"] < int(str(time.time()).split(".")[0]):
             # handle_ttl(item)
 
-    for item in USER_CACHE:
+    for item in session['user_cache']:
         if item["cache"] == req["cacheName"]:
             # Check if key already exists
             for obj in item["objects"]:
@@ -46,19 +46,19 @@ def cache_api():
     key = request.args.get("key")
 
     # Handle when user has no cache yet
-    if not USER_CACHE:
+    if not session['user_cache']:
         return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
 
     # Handle ttl logic
-    for item in USER_CACHE:
-        print("API", USER_CACHE)
+    for item in session['user_cache']:
+        print("API", session['user_cache'])
         if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
             handle_ttl(item)
             return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
 
     try:
-        print(USER_CACHE)
-        for item in USER_CACHE:
+        print(session['user_cache'])
+        for item in session['user_cache']:
             if item["cache"] == cache:
                 if not key:
                     return item["objects"]
@@ -88,7 +88,7 @@ def invalidate_cache_api():
 
     # Add to helper as get_cache
     try:
-        for item in USER_CACHE:
+        for item in session['user_cache']:
             if item["cache"] == cache and item["objects"]:
                 for index,obj in enumerate(item["objects"]):
                     if obj["key"] == key:
