@@ -432,8 +432,8 @@ def app_settings():
     """Create a new user cache"""
 
     user_id = int(session.get("user_id"))
-    print(f"user_id value: {user_id}")
-    print(f"user_id type: {type(user_id)}")
+    print(f"user_id from app-settings: {user_id}")
+    print(f"user_id type from app-settings: {type(user_id)}")
     
     if request.method == "POST":
         try:
@@ -445,7 +445,7 @@ def app_settings():
     else:
         # Redirect user to login form
         try:
-            rows = conn.execute("SELECT * FROM users WHERE username = ?", (user_id,))
+            rows = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,))
             print("rows", rows)
             user = rows.fetchone()
             print("user", user)
