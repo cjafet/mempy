@@ -429,7 +429,7 @@ def invalidate_cache():
 def app_settings():
     """Create a new user cache"""
 
-    user_id = session.get("user_id")
+    user_id = int(session.get("user_id"))
     print(f"user_id value: {user_id}")
     print(f"user_id type: {type(user_id)}")
     
