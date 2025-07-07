@@ -184,7 +184,13 @@ def cache():
             expires = int(str(time.time()).split(".")[0]) + int(ttl)
             print(expires)
             # USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
-            USER_CACHE.append({"cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
+            # USER_CACHE.append({"cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
+            new_cache = {"cache": cache, "objects": [], "isEnabled": True, "expiresOn": expires}
+            USER_CACHE.append(new_cache)
+            
+            print(f"Added cache: {new_cache}")
+            print(f"USER_CACHE after append: {USER_CACHE}")
+            print(f"USER_CACHE length: {len(USER_CACHE)}")
             return redirect("/")
         # except sqlite3.Error as e:
             # print(f"SQLite error: {e}")
