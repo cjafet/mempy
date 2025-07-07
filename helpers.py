@@ -5,7 +5,7 @@ import requests
 import urllib
 import uuid
 
-from flask import redirect, render_template, session, request
+from flask import redirect, render_template, session, request, g
 from functools import wraps
 from constants import SERVICE_UNAVAILABLE, SERVICE_UNAVAILABLE_MESSAGE, BAD_REQUEST, UNAUTHORIZED
 import json
