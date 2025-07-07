@@ -18,7 +18,7 @@ def is_cache_enabled(f):
 
     https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
     """
-    from app import USER_CACHE
+    # from app import USER_CACHE
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if request.method == "POST":
