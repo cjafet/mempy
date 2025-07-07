@@ -177,6 +177,7 @@ def cache():
         try:
             cursor = conn.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", (cache, ttl, session["user_id"]))
             conn.commit()
+            print(f"Insert successful. Rows affected: {cursor.rowcount}")
             id = cursor.lastrowid
             print("id", id)
             expires = int(str(time.time()).split(".")[0]) + int(ttl)
