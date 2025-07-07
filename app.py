@@ -24,6 +24,14 @@ conn = sqlite3.connect("mempy.db")
 conn.row_factory = sqlite3.Row  # This enables dictionary-like access
 cursor = conn.cursor()
 
+# Check which database file you're actually using
+print(f"Database file: {conn.execute('PRAGMA database_list').fetchall()}")
+
+# Also check the full path
+import os
+print(f"Current working directory: {os.getcwd()}")
+print(f"Database path: {os.path.abspath('mempy.db')}")
+
 # Global user cache
 USER_CACHE = []
 
