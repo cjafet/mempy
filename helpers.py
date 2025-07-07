@@ -52,7 +52,7 @@ def api_key_required(f):
 
     https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
     """
-    from app import API_KEY
+    # from app import API_KEY
     @wraps(f)
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get('Api-Key')
@@ -63,7 +63,7 @@ def api_key_required(f):
                 "error": BAD_REQUEST,
                 "message": "Missing Api-Key header.",
                 "path": "/api/cache-invalidation"}
-        if api_key not in API_KEY:
+        if api_key not in session['api_key']:
             return {
                 "timestamp": str(datetime.datetime.now()),
                 "status": 401,
