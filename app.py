@@ -429,17 +429,18 @@ def invalidate_cache():
 def app_settings():
     """Create a new user cache"""
 
+    user_id = session.get("user_id")
     if request.method == "POST":
         try:
-            id = conn.execute("UPDATE users SET api_key = ? WHERE id = ?", (str(uuid.uuid4()), session["user_id"]))
+            id = conn.execute("UPDATE users SET api_key = ? WHERE id = ?", (str(uuid.uuid4()), user_id))
             print("userId from setting", id)
             return redirect("/app-settings")
         except (ValueError, TypeError) as e:
             return build_error_message(400, BAD_REQUEST, e, "/app-settings")
     else:
         # Redirect user to login form
-        result = conn.execute("SELECT api_key,username FROM users WHERE id= ?", (session["user_id"]))
-        return render_template("app-settings.html", api_key=result[0]["api_key"], user_id=session["user_id"], username=result[0]["username"])
+        result = conn.execute("SELECT api_key,username FROM users WHERE id= ?", (user_id))
+        return render_template("app-settings.html", api_key=result[0]["api_key"], user_id=user_id, username=result[0]["username"])
 
 
 @app.route("/toggle-cache", methods=["POST", "GET"])
