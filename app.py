@@ -32,7 +32,7 @@ cursor = conn.cursor()
 # session['user_cache'] = []#
 
 # Global app api keys
-API_KEY = []
+# API_KEY = []
 
 from api import apis
 app.register_blueprint(apis)
@@ -40,15 +40,19 @@ app.register_blueprint(apis)
 @app.route("/")
 @login_required
 def index():
+    if 'user_cache' not in session:
+        session['user_cache'] = []
+
+    if 'api_key' not in session:
+        session['api_key'] = []
+    
     # Load application api-keys
     if not API_KEY:
         rows = conn.execute("SELECT api_key FROM users")
         keys = rows.fetchall()
         for key in keys:
-            API_KEY.append(key["api_key"])
+            session['api_key'].append(key["api_key"])
     
-    if 'user_cache' not in session:
-        session['user_cache'] = []
     
     print("USER_CACHE", session['user_cache'])
 
@@ -426,13 +430,14 @@ def app_settings():
 
     if request.method == "POST":
         try:
-            id = db.execute("UPDATE users SET api_key = ? WHERE id = ?", str(uuid.uuid4()), session["user_id"])
+            id = conn.execute("UPDATE users SET api_key = ? WHERE id = ?", str(uuid.uuid4()), session["user_id"])
+            print("userId from setting", id)
             return redirect("/app-settings")
         except (ValueError, TypeError) as e:
             return build_error_message(400, BAD_REQUEST, e, "/app-settings")
     else:
         # Redirect user to login form
-        result = db.execute("SELECT api_key,username FROM users WHERE id= ?", session["user_id"])
+        result = conn.execute("SELECT api_key,username FROM users WHERE id= ?", session["user_id"])
         return render_template("app-settings.html", api_key=result[0]["api_key"], user_id=session["user_id"], username=result[0]["username"])
 
 
