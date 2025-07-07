@@ -48,7 +48,7 @@ def index():
             API_KEY.append(key["api_key"])
     
     if 'user_cache' not in session:
-                session['user_cache'] = []
+        session['user_cache'] = []
     
     print("USER_CACHE", session['user_cache'])
 
