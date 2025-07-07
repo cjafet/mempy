@@ -57,6 +57,7 @@ def api_key_required(f):
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get('Api-Key')
         session_keys = session.get('api_key')
+        print("api_keys in session", session_keys)
         if not api_key:
             return {
                 "timestamp": str(datetime.datetime.now()),
