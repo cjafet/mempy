@@ -445,10 +445,10 @@ def app_settings():
     else:
         # Redirect user to login form
         try:
-            result = conn.execute("SELECT api_key,username FROM users WHERE id= ?", (user_id))
-            user = result.fetchone()
+            cursor = conn.execute("SELECT api_key,username FROM users WHERE id= ?", (session["user_id"]))
+            user = cursor.fetchone()
             user_dict = dict(user)
-            print(f"User data: {user_dict}")
+            print(f"User dict: {user_dict}")
             return render_template("app-settings.html", api_key=user_dict["api_key"], user_id=user_id, username=user_dict["username"])
         except sqlite3.Error as e:
             print(f"SQLite error: {e}")
