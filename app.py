@@ -451,7 +451,7 @@ def app_settings():
             print("user", user)
             user_dict = dict(user)
             print(f"User dict: {user_dict}")
-            return render_template("app-settings.html", api_key=user_dict["api_key"], user_id=user_dict["user_id"], username=user_dict["username"])
+            return render_template("app-settings.html", api_key=user_dict["api_key"], user_id=user_dict["id"], username=user_dict["username"])
         except sqlite3.Error as e:
             print(f"SQLite error: {e}")
             print(f"Error type: {type(e).__name__}")
