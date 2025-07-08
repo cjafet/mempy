@@ -25,7 +25,7 @@ def add_cache_api():
 
     @api_key_required
     @is_cache_enabled
-    def handle_request(session.get("api_key"), session.get("user_cache")):
+    def handle_request(g.api_key, g.user_cache):
         return f"Processing with API key: {api_key} and cache values {user_cache}"
 
     handle_request()
