@@ -53,9 +53,9 @@ def add_cache_api():
     print(req["cacheName"])
     return req 
 
+#@api_key_required
+#@is_cache_enabled
 @apis.route("/api/get-cache", methods=["GET"])
-@api_key_required
-@is_cache_enabled
 def cache_api():
     """Get cache item from cache key and cache name"""
     
