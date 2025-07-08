@@ -23,12 +23,12 @@ def add_cache_api():
     g.api_key = session.get("api_key")
     g.user_cache = session.get("user_cache")
 
-    @api_key_required
-    @is_cache_enabled
-    def handle_request():
-        return f"Processing api keys and cache"
+    # @api_key_required
+    # @is_cache_enabled
+    # def handle_request():
+        # return f"Processing api keys and cache"
 
-    handle_request()
+    # handle_request()
 
     # Handle ttl logic
     # for item in USER_CACHE:
