@@ -15,17 +15,17 @@ def add_cache_api():
     """Add new item to the selected cache object"""
     req = json.loads(request.data)
     print(req)
-    # Get API key from session and store in g
-    api_keys = session.get("api_key")
-    user_caches = session.get("user_cache")
-    print("api keys from set-cache", api_keys)
-    print("user cache from set-cache", user_caches)
-    g.api_key = api_keys
-    g.user_cache = user_caches
+
+    # Debug session contents
+    print("Full session:", dict(session))
+    print("Session keys:", list(session.keys()))
+
+    g.api_key = session.get("api_key")
+    g.user_cache = session.get("user_cache")
 
     @api_key_required
     @is_cache_enabled
-    def handle_request(api_keys, user_caches):
+    def handle_request(session.get("api_key"), session.get("user_cache")):
         return f"Processing with API key: {api_key} and cache values {user_cache}"
 
     handle_request()
