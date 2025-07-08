@@ -20,7 +20,12 @@ def add_cache_api():
     print("Full session:", dict(session))
     print("Session keys:", list(session.keys()))
 
-    g.api_key = session.get("api_key")
+    api_keys_list = session.get("api_key", [])
+    print("API keys list:", api_keys_list)
+
+    user_api_key = api_keys_list[0] if api_keys_list else None
+
+    g.api_key = user_api_key
     g.user_cache = session.get("user_cache")
 
     # @api_key_required
