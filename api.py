@@ -16,8 +16,8 @@ def add_cache_api():
     req = json.loads(request.data)
     print(req)
     # Get API key from session and store in g
-    api_keys = session.get('api_key')
-    user_caches = session.get('user_cache')
+    api_keys = session.get("api_key")
+    user_caches = session.get("user_cache")
     print("api keys from set-cache", api_keys)
     print("user cache from set-cache", user_caches)
     g.api_key = api_keys
