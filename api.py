@@ -32,7 +32,7 @@ def add_cache_api():
                 for obj in item["objects"]:
                     if obj["key"] == req["cacheKey"]:
                         return build_error_message(400, BAD_REQUEST, BAD_REQUEST_MESSAGE_KEY_EXISTS, "/api/set-cache")
-                item["objects"].append({"key": req["data"]["id"], "value": req["data"]})
+                item["objects"].append({"key": req["cacheKey"], "value": req["data"]})
                 print(item["objects"])
                 print(json.dumps(req["data"]))
     
