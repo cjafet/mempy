@@ -5,7 +5,7 @@ import requests
 import urllib
 import uuid
 
-from flask import redirect, render_template, session, request, g
+from flask import redirect, render_template, session, request
 from functools import wraps
 from constants import SERVICE_UNAVAILABLE, SERVICE_UNAVAILABLE_MESSAGE, BAD_REQUEST, UNAUTHORIZED
 import json
@@ -18,15 +18,14 @@ def is_cache_enabled(f):
 
     https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
     """
-    # from app import USER_CACHE
+    from app import USER_CACHE
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        user_cache = getattr(g, 'user_cache', None)
         if request.method == "POST":
             req = json.loads(request.data)
             if "cacheName" in req and req["cacheName"] != "":
                 print(req["cacheName"])
-                for item in user_cache:
+                for item in USER_CACHE:
                     if item["cache"] == req["cacheName"]:
                         if item["isEnabled"] == False:
                             return build_error_message(503, SERVICE_UNAVAILABLE, SERVICE_UNAVAILABLE_MESSAGE, "/api/set-cache")
@@ -38,7 +37,7 @@ def is_cache_enabled(f):
             if not cache:
                 return build_error_message(400, BAD_REQUEST, "Missing cache param.", "/api/*")
             else:
-                for item in user_cache:
+                for item in USER_CACHE:
                     if item["cache"] == cache:
                         if item["isEnabled"] == False:
                             return build_error_message(503, SERVICE_UNAVAILABLE, SERVICE_UNAVAILABLE_MESSAGE, "/api/*")
@@ -53,12 +52,10 @@ def api_key_required(f):
 
     https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
     """
-    # from app import API_KEY
+    from app import API_KEY
     @wraps(f)
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get('Api-Key')
-        session_keys = getattr(g, 'api_key', None)
-        print("api_keys in session", session_keys)
         if not api_key:
             return {
                 "timestamp": str(datetime.datetime.now()),
@@ -66,7 +63,7 @@ def api_key_required(f):
                 "error": BAD_REQUEST,
                 "message": "Missing Api-Key header.",
                 "path": "/api/cache-invalidation"}
-        if api_key not in session_keys:
+        if api_key not in API_KEY:
             return {
                 "timestamp": str(datetime.datetime.now()),
                 "status": 401,
