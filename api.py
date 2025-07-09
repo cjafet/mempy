@@ -30,7 +30,7 @@ def add_cache_api():
 
     with cache_lock:
         user_cache_id = db.execute("SELECT id FROM user_cache WHERE cache_name= ?", cache_name)
-        db.execute("INSERT INTO cache_data (cache_key, value, user_cahce_id) VALUES (?, ?, ?)", cache_key, value, user_cache_id)
+        db.execute("INSERT INTO cache_data (cache_key, value, user_cahce_id) VALUES (?, ?, ?)", cache_key, json.dumps(value), user_cache_id)
         # Handle ttl logic
         # for item in USER_CACHE:
         #     if item["cache"] == cache_name and item["expiresOn"] < int(str(time.time()).split(".")[0]):
@@ -88,7 +88,7 @@ def cache_api():
         #     return build_error_message_with_detail(404, NOT_FOUND, NOT_FOUND_MESSAGE, "Cache " + cache + " not found.", "/api/get-cache")
         # except (ValueError, TypeError):
         #     return build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/api/get-cache")
-        return data
+        return json.loads(data)
 
 
 @apis.route("/api/cache-invalidation", methods=["GET"])
