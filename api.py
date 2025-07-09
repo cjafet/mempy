@@ -29,7 +29,7 @@ def add_cache_api():
 
 
     with cache_lock:
-        user_cahce_id = db.execute("SELECT id FROM user_cache WHERE cache_name= ?", cache_name)
+        user_cache_id = db.execute("SELECT id FROM user_cache WHERE cache_name= ?", cache_name)
         db.execute("INSERT INTO cache_data (cache_key, value, user_cahce_id) VALUES (?, ?, ?)", cache_key, value, user_cache_id)
         # Handle ttl logic
         # for item in USER_CACHE:
