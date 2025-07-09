@@ -9,6 +9,8 @@ import threading
 from app import USER_CACHE
 cache_lock = threading.Lock()
 
+db = SQL("sqlite:///mempy.db")
+
 apis = Blueprint('apis', __name__)
 
 
@@ -20,23 +22,30 @@ def add_cache_api():
     req = json.loads(request.data)
     print(req)
 
+    cache_name = req["cacheName"]
+    cache_key = req["cacheKey"]
+    value = req["data"]
+
+
     with cache_lock:
+        user_cahce_id = db.execute("SELECT id FROM user_cache WHERE cache_name= ?", cache_name)
+        db.execute("INSERT INTO cache_data (cache_key, value, user_cahce_id) VALUES (?, ?, ?)", cache_key, value, user_cache_id)
         # Handle ttl logic
-        for item in USER_CACHE:
-            if item["cache"] == req["cacheName"] and item["expiresOn"] < int(str(time.time()).split(".")[0]):
-                handle_ttl(item)
+        # for item in USER_CACHE:
+        #     if item["cache"] == cache_name and item["expiresOn"] < int(str(time.time()).split(".")[0]):
+        #         handle_ttl(item)
     
-        for item in USER_CACHE:
-            if item["cache"] == req["cacheName"]:
-                # Check if key already exists
-                for obj in item["objects"]:
-                    if obj["key"] == req["cacheKey"]:
-                        return build_error_message(400, BAD_REQUEST, BAD_REQUEST_MESSAGE_KEY_EXISTS, "/api/set-cache")
-                item["objects"].append({"key": req["cacheKey"], "value": req["data"]})
-                print(item["objects"])
-                print(json.dumps(req["data"]))
+        # for item in USER_CACHE:
+        #     if item["cache"] == cache_name:
+        #         # Check if key already exists
+        #         for obj in item["objects"]:
+        #             if obj["key"] == cache_key:
+        #                 return build_error_message(400, BAD_REQUEST, BAD_REQUEST_MESSAGE_KEY_EXISTS, "/api/set-cache")
+        #         item["objects"].append({"key": cache_key, "value": value})
+        #         print(item["objects"])
+        #         print(json.dumps(value))
     
-        print(req["cacheName"])
+        print(cache_name)
         return req 
 
 @apis.route("/api/get-cache", methods=["GET"])
@@ -49,48 +58,36 @@ def cache_api():
     key = request.args.get("key")
 
     # Handle when user has no cache yet
-    if not USER_CACHE:
-        return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
-
-    # first cache check
-    try:
-        print(USER_CACHE)
-        for item in USER_CACHE:
-            if item["cache"] == cache:
-                if not key:
-                    return item["objects"]
-                else:
-                    for obj in item["objects"]:
-                        if obj["key"] == key:
-                            print(obj["value"])
-                            return obj["value"]
-    except (ValueError, TypeError):
-        return build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/api/get-cache")
+    # if not USER_CACHE:
+    #     return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
 
     with cache_lock:
+        user_cahce_id = db.execute("SELECT id FROM user_cache WHERE cache_name= ?", cache)
+        data = db.execute("SELECT value FROM cache_data WHERE cache_key= ?", key)
         # Handle ttl logic
-        for item in USER_CACHE:
-            print("API", USER_CACHE)
-            if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
-                handle_ttl(item)
-                return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
+        # for item in USER_CACHE:
+        #     print("API", USER_CACHE)
+        #     if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
+        #         handle_ttl(item)
+        #         return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
     
-        try:
-            print(USER_CACHE)
-            for item in USER_CACHE:
-                if item["cache"] == cache:
-                    if not key:
-                        return item["objects"]
-                    else:
-                        for obj in item["objects"]:
-                            if obj["key"] == key:
-                                print(obj["value"])
-                                return obj["value"]
-                        # Return error message if no key found
-                        return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
-            return build_error_message_with_detail(404, NOT_FOUND, NOT_FOUND_MESSAGE, "Cache " + cache + " not found.", "/api/get-cache")
-        except (ValueError, TypeError):
-            return build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/api/get-cache")
+        # try:
+        #     print(USER_CACHE)
+        #     for item in USER_CACHE:
+        #         if item["cache"] == cache:
+        #             if not key:
+        #                 return item["objects"]
+        #             else:
+        #                 for obj in item["objects"]:
+        #                     if obj["key"] == key:
+        #                         print(obj["value"])
+        #                         return obj["value"]
+        #                 # Return error message if no key found
+        #                 return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
+        #     return build_error_message_with_detail(404, NOT_FOUND, NOT_FOUND_MESSAGE, "Cache " + cache + " not found.", "/api/get-cache")
+        # except (ValueError, TypeError):
+        #     return build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/api/get-cache")
+        return data
 
 
 @apis.route("/api/cache-invalidation", methods=["GET"])
