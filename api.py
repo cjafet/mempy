@@ -1,61 +1,44 @@
 from helpers import is_cache_enabled, api_key_required, build_error_message, build_error_message_with_detail, handle_ttl
 from constants import NOT_FOUND, NOT_FOUND_MESSAGE, BAD_REQUEST, BAD_REQUEST_MESSAGE_INVALID_KEY, BAD_REQUEST_MESSAGE_KEY_EXISTS, SERVER_ERROR, SERVER_ERROR_MESSAGE
-from flask import Flask, request, session, g
+from flask import Flask, request
 from flask import Blueprint
 import time
 import json
 
-# from app import USER_CACHE
+from app import USER_CACHE
 
 apis = Blueprint('apis', __name__)
 
 
 @apis.route("/api/set-cache", methods=["POST"])
+@api_key_required
+@is_cache_enabled
 def add_cache_api():
     """Add new item to the selected cache object"""
     req = json.loads(request.data)
     print(req)
 
-    # Debug session contents
-    print("Full session:", dict(session))
-    print("Session keys:", list(session.keys()))
-
-    api_keys_list = session.get("api_key", [])
-    print("API keys list:", api_keys_list)
-
-    user_api_key = api_keys_list[0] if api_keys_list else None
-
-    g.api_key = user_api_key
-    g.user_cache = session.get("user_cache")
-
-    # @api_key_required
-    # @is_cache_enabled
-    # def handle_request():
-        # return f"Processing api keys and cache"
-
-    # handle_request()
-
     # Handle ttl logic
-    # for item in USER_CACHE:
-        # if item["cache"] == req["cacheName"] and item["expiresOn"] < int(str(time.time()).split(".")[0]):
-            # handle_ttl(item)
+    for item in USER_CACHE:
+        if item["cache"] == req["cacheName"] and item["expiresOn"] < int(str(time.time()).split(".")[0]):
+            handle_ttl(item)
 
-    for item in session['user_cache']:
+    for item in USER_CACHE:
         if item["cache"] == req["cacheName"]:
             # Check if key already exists
             for obj in item["objects"]:
-                if obj["key"] == req["cacheKey"]:
+                if obj["key"] == req["data"]["id"]:
                     return build_error_message(400, BAD_REQUEST, BAD_REQUEST_MESSAGE_KEY_EXISTS, "/api/set-cache")
-            item["objects"].append({"key": req["cacheKey"], "value": req["data"]})
+            item["objects"].append({"key": req["data"]["id"], "value": req["data"]})
             print(item["objects"])
             print(json.dumps(req["data"]))
 
     print(req["cacheName"])
     return req 
 
-#@api_key_required
-#@is_cache_enabled
 @apis.route("/api/get-cache", methods=["GET"])
+@api_key_required
+@is_cache_enabled
 def cache_api():
     """Get cache item from cache key and cache name"""
     
@@ -63,19 +46,19 @@ def cache_api():
     key = request.args.get("key")
 
     # Handle when user has no cache yet
-    if not session['user_cache']:
+    if not USER_CACHE:
         return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
 
     # Handle ttl logic
-    for item in session['user_cache']:
-        print("API", session['user_cache'])
+    for item in USER_CACHE:
+        print("API", USER_CACHE)
         if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
             handle_ttl(item)
             return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
 
     try:
-        print(session['user_cache'])
-        for item in session['user_cache']:
+        print(USER_CACHE)
+        for item in USER_CACHE:
             if item["cache"] == cache:
                 if not key:
                     return item["objects"]
@@ -105,7 +88,7 @@ def invalidate_cache_api():
 
     # Add to helper as get_cache
     try:
-        for item in session['user_cache']:
+        for item in USER_CACHE:
             if item["cache"] == cache and item["objects"]:
                 for index,obj in enumerate(item["objects"]):
                     if obj["key"] == key:
