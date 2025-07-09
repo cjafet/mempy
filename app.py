@@ -40,19 +40,20 @@ def index():
             API_KEY.append(key["api_key"])
     print(USER_CACHE)
 
-    # Get user_cache from database
-    user_cache = db.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
-    print("user_cache", user_cache)
-
-    # Add cache to USER_CACHE
-    if not USER_CACHE:
-        for item in user_cache:
-            expires = int(str(time.time()).split(".")[0]) + int(item["ttl"])
-            print(expires)
-            cache_item = {"id": item["id"], "cache": item["cache_name"], "ttl": item["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
-            USER_CACHE.append(cache_item)
-
-    return render_template("index.html", cache=USER_CACHE, len=len)
+    with cache_lock:
+        # Get user_cache from database
+        user_cache = db.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
+        print("user_cache", user_cache)
+    
+        # Add cache to USER_CACHE
+        if not USER_CACHE:
+            for item in user_cache:
+                expires = int(str(time.time()).split(".")[0]) + int(item["ttl"])
+                print(expires)
+                cache_item = {"id": item["id"], "cache": item["cache_name"], "ttl": item["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
+                USER_CACHE.append(cache_item)
+    
+        return render_template("index.html", cache=USER_CACHE, len=len)
 
 
 @app.route("/login", methods=["GET", "POST"])
