@@ -52,6 +52,10 @@ def cache_api():
     if not USER_CACHE:
         return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
 
+    if key in USER_CACHE["cache"]:
+        print("Returning cache from 1st check", key, cache)
+        return USER_CACHE["cache"][key]
+
     with cache_lock:
         # Handle ttl logic
         for item in USER_CACHE:
