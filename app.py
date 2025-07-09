@@ -1,6 +1,4 @@
-# from cs50 import SQL
-import sqlite3
-import traceback
+from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -16,23 +14,16 @@ app = Flask(__name__)
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-app.config["SESSION_FILE_DIR"] = "./session_data"  # Specify directory
-app.config["SESSION_FILE_THRESHOLD"] = 50  # Max number of sessions
-app.config["SESSION_FILE_MODE"] = 0o600  # File permissions
 Session(app)
 
 # Configure CS50 Library to use SQLite database
-# db = SQL("sqlite:///mempy.db")
-conn = sqlite3.connect("mempy.db")
-conn.row_factory = sqlite3.Row  # This enables dictionary-like access
-cursor = conn.cursor()
+db = SQL("sqlite:///mempy.db")
 
 # Global user cache
-# Can not be used outside httpcontext
-# session['user_cache'] = []#
+USER_CACHE = []
 
 # Global app api keys
-# API_KEY = []
+API_KEY = []
 
 from api import apis
 app.register_blueprint(apis)
@@ -40,34 +31,26 @@ app.register_blueprint(apis)
 @app.route("/")
 @login_required
 def index():
-    if 'user_cache' not in session:
-        session['user_cache'] = []
-
     # Load application api-keys
-    if 'api_key' not in session:
-        session['api_key'] = []
-        rows = conn.execute("SELECT api_key FROM users")
-        keys = rows.fetchall()
+    if not API_KEY:
+        keys = db.execute("SELECT api_key FROM users")
         for key in keys:
-            session['api_key'].append(key["api_key"])
-    
-    print("USER_CACHE", session['user_cache'])
-    print("API_KEYS", session['api_key'])
+            API_KEY.append(key["api_key"])
+    print(USER_CACHE)
 
     # Get user_cache from database
-    # rows = conn.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", (session["user_id"],))
-    # user_cache = rows.fetchall()
-    # print("user_cache", user_cache)
+    user_cache = db.execute("SELECT * FROM user_cache WHERE user_id = ? ORDER BY id", session["user_id"])
+    print("user_cache", user_cache)
 
     # Add cache to USER_CACHE
-    # if not USER_CACHE:
-        # for cache in user_cache:
-            # expires = int(str(time.time()).split(".")[0]) + int(cache["ttl"])
-            # print(expires)
-            # cache_item = {"id": cache["id"], "cache": cache["cache_name"], "ttl": cache["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
-            # USER_CACHE.append(cache_item)
+    if not USER_CACHE:
+        for item in user_cache:
+            expires = int(str(time.time()).split(".")[0]) + int(item["ttl"])
+            print(expires)
+            cache_item = {"id": item["id"], "cache": item["cache_name"], "ttl": item["ttl"], "objects": [], "isEnabled": True, "expiresOn": expires}
+            USER_CACHE.append(cache_item)
 
-    return render_template("index.html", cache=session['user_cache'], len=len)
+    return render_template("index.html", cache=USER_CACHE, len=len)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -91,25 +74,22 @@ def login():
             return redirect("/login")
 
         # Query database for username
-        rows = conn.execute("SELECT * FROM users WHERE username = ?", (username,))
-        user = rows.fetchone()
-        user_dict = dict(user)
-        print(f"User data: {user_dict}")
+        rows = db.execute(
+            "SELECT * FROM users WHERE username = ?", request.form.get("username")
+        )
 
         # Ensure username exists and password is correct
-        if not user_dict or not check_password_hash(
-            user_dict["hash"], request.form.get("password")
+        if len(rows) != 1 or not check_password_hash(
+            rows[0]["hash"], request.form.get("password")
         ):
             flash('Invalid username and/or password')
             return redirect("/login")
 
         # Remember which user has logged in
-        session["user_id"] = user_dict["id"]
-        print(f"user_id value: {session.get("user_id")}")
-        print(f"user_id type: {type(session.get("user_id"))}")
+        session["user_id"] = rows[0]["id"]
 
         # Add user ApiKey to session
-        session["api_key"] = user_dict["api_key"]
+        session["api_key"] = rows[0]["api_key"]
 
         # Redirect user to home page
         return redirect("/")
@@ -130,7 +110,7 @@ def register():
             flash('Enter a valid username')
             return redirect("/register")
 
-        check_user = cursor.execute("SELECT username FROM users WHERE username = ?", username)
+        check_user = db.execute("SELECT username FROM users WHERE username = ?", username)
         if check_user:
             if check_user[0]["username"] == username:
                 flash('Username already exists!')
@@ -187,37 +167,11 @@ def cache():
             flash('TTL must be a positive value.')
             return redirect("/create-cache")
         try:
-            # cursor = conn.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", (cache, ttl, session["user_id"]))
-            # conn.commit()
-            # print(f"Insert successful. Rows affected: {cursor.rowcount}")
-            # id = cursor.lastrowid
-            # print("id", id)
+            id = db.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", cache, ttl, session["user_id"])
             expires = int(str(time.time()).split(".")[0]) + int(ttl)
             print(expires)
-            # USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
-            # USER_CACHE.append({"cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
-            
-            if 'user_cache' not in session:
-                session['user_cache'] = []
-                
-            new_cache = {"cache": cache, "objects": [], "isEnabled": True, "expiresOn": expires}
-            # USER_CACHE.append(new_cache)
-            session['user_cache'].append(new_cache)
-            
-            # Mark session as modified
-            session.modified = True
-            
-            print(f"Added cache: {new_cache}")
-            print(f"USER_CACHE after append: {session['user_cache']}")
-            print(f"USER_CACHE length: {len(session['user_cache'])}")
+            USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
             return redirect("/")
-        # except sqlite3.Error as e:
-            # print(f"SQLite error: {e}")
-            # print(f"Error type: {type(e).__name__}")
-            # conn.rollback()
-        except Exception as e:
-            print(f"General error: {e}")
-            print(f"Full traceback: {traceback.format_exc()}")
         except (ValueError, TypeError) as e:
             return build_error_message(400, BAD_REQUEST, e, "/create-cache")
     else:
@@ -239,8 +193,7 @@ def remove_cache():
     for index,item in enumerate(USER_CACHE):
         if item["id"] == int(cache_id):
             # Remove cache from database
-            cursor.execute("DELETE FROM user_cache WHERE id = ?", cache_id)
-            con.commit()
+            db.execute("DELETE FROM user_cache WHERE id = ?", cache_id)
             # Remove cache from USER_CACHE
             USER_CACHE.pop(index)
 
@@ -259,7 +212,7 @@ def clear_cache():
         flash('Enter a valid cache name')
         return redirect("/")
     
-    for item in session['user_cache']:
+    for item in USER_CACHE:
         if item["cache"] == cache_name:
             # Clear cache from USER_CACHE
             item["objects"] = []
@@ -281,11 +234,11 @@ def view_cache():
         return redirect("/")
 
     # Handle ttl logic
-    for item in session['user_cache']:
+    for item in USER_CACHE:
         if item["cache"] == cache_name and item["expiresOn"] < int(str(time.time()).split(".")[0]):
             handle_ttl(item)
     
-    for item in session['user_cache']:
+    for item in USER_CACHE:
         if item["cache"] == cache_name:
             # Return selected cache
             return jsonify(item["objects"]) 
@@ -316,25 +269,25 @@ def add_cache():
             return redirect("/set-cache")
 
         # Handle ttl logic
-        for item in session['user_cache']:
+        for item in USER_CACHE:
             if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
                 handle_ttl(item)
 
-        for item in session['user_cache']:
+        for item in USER_CACHE:
             if item["cache"] == cache:
                 for obj in item["objects"]:
                     print(obj["key"], key)
                     if obj["key"] == key:
                         return build_error_message(400, BAD_REQUEST, BAD_REQUEST_MESSAGE_KEY_EXISTS, "/set-cache")
 
-        for item in session['user_cache']:
+        for item in USER_CACHE:
             if item["cache"] == cache:
                 item["objects"].append({"key": key, "value": json.loads(value)})
         return redirect("/")
     else:
         # Redirect user to login form
         cache_name = request.args.get("cache_name")
-        return render_template("set-cache.html", cache=session['user_cache'], len=len, cache_name=cache_name)
+        return render_template("set-cache.html", cache=USER_CACHE, len=len, cache_name=cache_name)
 
 
 @app.route("/get-cache", methods=["GET", "POST"])
@@ -357,19 +310,19 @@ def search_cache():
             return redirect("/get-cache")
 
         # Handle when user has no cache yet
-        if not session['user_cache']:
+        if not USER_CACHE:
             flash('No cache found')
             return redirect("/")
 
         # Handle ttl logic
-        for item in session['user_cache']:
+        for item in USER_CACHE:
             if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
                 handle_ttl(item)
                 return json.dumps(build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/get-cache"))
 
         # Add to helper as get_cache
         try:
-            for item in session['user_cache']:
+            for item in USER_CACHE:
                 print("entering looping")
                 print(item["cache"] == cache)
                 if item["cache"] == cache and item["objects"]:
@@ -384,7 +337,7 @@ def search_cache():
             return json.dumps(build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/get-cache"))
     else:
         # Redirect user to login form
-        return render_template("get-cache.html", cache=session['user_cache'], len=len)
+        return render_template("get-cache.html", cache=USER_CACHE, len=len)
 
 
 @app.route("/cache-invalidation", methods=["GET", "POST"])
@@ -407,7 +360,7 @@ def invalidate_cache():
 
         # Add to helper as get_cache
         try:
-            for item in session['user_cache']:
+            for item in USER_CACHE:
                 if item["cache"] == cache and item["objects"]:
                     for index,obj in enumerate(item["objects"]):
                         if obj["key"] == key:
@@ -420,7 +373,7 @@ def invalidate_cache():
             return json.dumps(build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/cache-invalidation"))
     else:
         # Redirect user to login form
-        return render_template("cache-invalidation.html", cache=session['user_cache'], len=len)
+        return render_template("cache-invalidation.html", cache=USER_CACHE, len=len)
 
 
 @app.route("/app-settings", methods=["GET", "POST"])
@@ -428,33 +381,16 @@ def invalidate_cache():
 def app_settings():
     """Create a new user cache"""
 
-    user_id = int(session.get("user_id"))
-    print(f"user_id from app-settings: {user_id}")
-    print(f"user_id type from app-settings: {type(user_id)}")
-    
     if request.method == "POST":
         try:
-            id = conn.execute("UPDATE users SET api_key = ? WHERE id = ?", (str(uuid.uuid4()), user_id))
-            print("userId from setting", id)
+            id = db.execute("UPDATE users SET api_key = ? WHERE id = ?", str(uuid.uuid4()), session["user_id"])
             return redirect("/app-settings")
         except (ValueError, TypeError) as e:
             return build_error_message(400, BAD_REQUEST, e, "/app-settings")
     else:
         # Redirect user to login form
-        try:
-            rows = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-            print("rows", rows)
-            user = rows.fetchone()
-            print("user", user)
-            user_dict = dict(user)
-            print(f"User dict: {user_dict}")
-            return render_template("app-settings.html", api_key=user_dict["api_key"], user_id=user_dict["id"], username=user_dict["username"])
-        except sqlite3.Error as e:
-            print(f"SQLite error: {e}")
-            print(f"Error type: {type(e).__name__}")
-        except Exception as e:
-            print(f"General error: {e}")
-            print(f"Full traceback: {traceback.format_exc()}")
+        result = db.execute("SELECT api_key,username FROM users WHERE id= ?", session["user_id"])
+        return render_template("app-settings.html", api_key=result[0]["api_key"], user_id=session["user_id"], username=result[0]["username"])
 
 
 @app.route("/toggle-cache", methods=["POST", "GET"])
@@ -468,7 +404,7 @@ def toggle_cache():
             return redirect("/")
         print(cache)
 
-        for item in session['user_cache']:
+        for item in USER_CACHE:
             if item["cache"] == cache:
                 if item["isEnabled"] == False:
                     item["isEnabled"] = True
