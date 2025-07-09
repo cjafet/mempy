@@ -26,12 +26,10 @@ def add_cache_api():
     cache_name = req["cacheName"]
     cache_key = req["cacheKey"]
     value = req["data"]
-    data = "'" + value + "'" 
-
 
     with cache_lock:
         user_cache_id = db.execute("SELECT id FROM user_cache WHERE cache_name= ?", cache_name)
-        db.execute("INSERT INTO cache_data (cache_key, value, user_cahce_id) VALUES (?, ?, ?)", cache_key, data, user_cache_id)
+        db.execute("INSERT INTO cache_data (cache_key, value, user_cahce_id) VALUES (?, ?, ?)", cache_key, request.data, user_cache_id)
         # Handle ttl logic
         # for item in USER_CACHE:
         #     if item["cache"] == cache_name and item["expiresOn"] < int(str(time.time()).split(".")[0]):
