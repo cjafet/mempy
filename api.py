@@ -27,6 +27,11 @@ def add_cache_api():
     cache_key = req["cacheKey"]
     value = req["data"]
 
+    try:
+        json.dumps(req)
+    except TypeError as e:
+        print("Serialization error:", e)
+
     with cache_lock:
         user_cache_id = db.execute("SELECT id FROM user_cache WHERE cache_name= ?", cache_name)
         db.execute("INSERT INTO cache_data (cache_key, value, user_cahce_id) VALUES (?, ?, ?)", cache_key, json.dumps(req), user_cache_id)
