@@ -8,6 +8,7 @@ from constants import NOT_FOUND, NOT_FOUND_MESSAGE, BAD_REQUEST, BAD_REQUEST_MES
 import uuid
 import datetime, time
 import json
+import threading
 
 app = Flask(__name__)
 
@@ -21,6 +22,7 @@ db = SQL("sqlite:///mempy.db")
 
 # Global user cache
 USER_CACHE = []
+cache_lock = threading.Lock()
 
 # Global app api keys
 API_KEY = []
@@ -167,11 +169,12 @@ def cache():
             flash('TTL must be a positive value.')
             return redirect("/create-cache")
         try:
-            id = db.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", cache, ttl, session["user_id"])
-            expires = int(str(time.time()).split(".")[0]) + int(ttl)
-            print(expires)
-            USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
-            return redirect("/")
+            with cache_lock:
+                id = db.execute("INSERT INTO user_cache (cache_name, ttl, user_id) VALUES (?, ?, ?)", cache, ttl, session["user_id"])
+                expires = int(str(time.time()).split(".")[0]) + int(ttl)
+                print(expires)
+                USER_CACHE.append({"id": id, "cache": cache, "ttl": ttl, "objects": [], "isEnabled": True, "expiresOn": expires})
+                return redirect("/")
         except (ValueError, TypeError) as e:
             return build_error_message(400, BAD_REQUEST, e, "/create-cache")
     else:
@@ -190,16 +193,17 @@ def remove_cache():
         flash('Enter a valid cache id.')
         return redirect("/")
     
-    for index,item in enumerate(USER_CACHE):
-        if item["id"] == int(cache_id):
-            # Remove cache from database
-            db.execute("DELETE FROM user_cache WHERE id = ?", cache_id)
-            # Remove cache from USER_CACHE
-            USER_CACHE.pop(index)
-
-    flash('Cache successfully removed from database!')
-
-    return redirect("/")
+    with cache_lock:
+        for index,item in enumerate(USER_CACHE):
+            if item["id"] == int(cache_id):
+                # Remove cache from database
+                db.execute("DELETE FROM user_cache WHERE id = ?", cache_id)
+                # Remove cache from USER_CACHE
+                USER_CACHE.pop(index)
+    
+        flash('Cache successfully removed from database!')
+    
+        return redirect("/")
 
 @app.route("/clear-cache", methods=["POST"])
 @login_required
@@ -212,14 +216,15 @@ def clear_cache():
         flash('Enter a valid cache name')
         return redirect("/")
     
-    for item in USER_CACHE:
-        if item["cache"] == cache_name:
-            # Clear cache from USER_CACHE
-            item["objects"] = []
-
-    flash('Cache removed successfully!')
-
-    return redirect("/")
+    with cache_lock:
+        for item in USER_CACHE:
+            if item["cache"] == cache_name:
+                # Clear cache from USER_CACHE
+                item["objects"] = []
+    
+        flash('Cache removed successfully!')
+    
+        return redirect("/")
 
 
 @app.route("/view-cache", methods=["POST"])
@@ -268,22 +273,24 @@ def add_cache():
             flash('Enter a valid value')
             return redirect("/set-cache")
 
+        with cache_lock:
+
         # Handle ttl logic
-        for item in USER_CACHE:
-            if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
-                handle_ttl(item)
+            for item in USER_CACHE:
+                if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
+                    handle_ttl(item)
 
-        for item in USER_CACHE:
-            if item["cache"] == cache:
-                for obj in item["objects"]:
-                    print(obj["key"], key)
-                    if obj["key"] == key:
-                        return build_error_message(400, BAD_REQUEST, BAD_REQUEST_MESSAGE_KEY_EXISTS, "/set-cache")
+            for item in USER_CACHE:
+                if item["cache"] == cache:
+                    for obj in item["objects"]:
+                        print(obj["key"], key)
+                        if obj["key"] == key:
+                            return build_error_message(400, BAD_REQUEST, BAD_REQUEST_MESSAGE_KEY_EXISTS, "/set-cache")
 
-        for item in USER_CACHE:
-            if item["cache"] == cache:
-                item["objects"].append({"key": key, "value": json.loads(value)})
-        return redirect("/")
+            for item in USER_CACHE:
+                if item["cache"] == cache:
+                    item["objects"].append({"key": key, "value": json.loads(value)})
+            return redirect("/")
     else:
         # Redirect user to login form
         cache_name = request.args.get("cache_name")
@@ -314,27 +321,29 @@ def search_cache():
             flash('No cache found')
             return redirect("/")
 
-        # Handle ttl logic
-        for item in USER_CACHE:
-            if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
-                handle_ttl(item)
-                return json.dumps(build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/get-cache"))
-
-        # Add to helper as get_cache
-        try:
+        with cache_lock:
+            
+            # Handle ttl logic
             for item in USER_CACHE:
-                print("entering looping")
-                print(item["cache"] == cache)
-                if item["cache"] == cache and item["objects"]:
-                    print("entering if")
-                    for obj in item["objects"]:
-                        print(obj["key"], key)
-                        if obj["key"] == key:
-                            return obj["value"]
-                    # Return the error message if no key found
+                if item["cache"] == cache and item["expiresOn"] < int(str(time.time()).split(".")[0]):
+                    handle_ttl(item)
                     return json.dumps(build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/get-cache"))
-        except (ValueError, TypeError):
-            return json.dumps(build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/get-cache"))
+
+            # Add to helper as get_cache
+            try:
+                for item in USER_CACHE:
+                    print("entering looping")
+                    print(item["cache"] == cache)
+                    if item["cache"] == cache and item["objects"]:
+                        print("entering if")
+                        for obj in item["objects"]:
+                            print(obj["key"], key)
+                            if obj["key"] == key:
+                                return obj["value"]
+                        # Return the error message if no key found
+                        return json.dumps(build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/get-cache"))
+            except (ValueError, TypeError):
+                return json.dumps(build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/get-cache"))
     else:
         # Redirect user to login form
         return render_template("get-cache.html", cache=USER_CACHE, len=len)
@@ -358,19 +367,20 @@ def invalidate_cache():
             flash('Enter a valid key name')
             return redirect("/cache-invalidation")
 
-        # Add to helper as get_cache
-        try:
-            for item in USER_CACHE:
-                if item["cache"] == cache and item["objects"]:
-                    for index,obj in enumerate(item["objects"]):
-                        if obj["key"] == key:
-                            print(obj["key"])
-                            item["objects"].pop(index)
-                            return json.dumps({"status": 204})
-                    # Return the error message if no key found
-                    return json.dumps(build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/cache-invalidation"))
-        except (ValueError, TypeError):
-            return json.dumps(build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/cache-invalidation"))
+        with cache_lock:
+            # Add to helper as get_cache
+            try:
+                for item in USER_CACHE:
+                    if item["cache"] == cache and item["objects"]:
+                        for index,obj in enumerate(item["objects"]):
+                            if obj["key"] == key:
+                                print(obj["key"])
+                                item["objects"].pop(index)
+                                return json.dumps({"status": 204})
+                        # Return the error message if no key found
+                        return json.dumps(build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/cache-invalidation"))
+            except (ValueError, TypeError):
+                return json.dumps(build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/cache-invalidation"))
     else:
         # Redirect user to login form
         return render_template("cache-invalidation.html", cache=USER_CACHE, len=len)
