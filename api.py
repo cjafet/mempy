@@ -84,7 +84,7 @@ def cache_api():
         return json.loads(data[0]['json_data'])
 
 @apis.route("/api/cache-invalidation", methods=["GET"])
-@api_key_required
+# @api_key_required
 @is_cache_enabled
 def invalidate_cache_api():
     """API to Invalidate cache key"""
