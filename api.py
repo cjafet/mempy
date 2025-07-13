@@ -80,7 +80,7 @@ def cache_api():
         #         return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
     
         # print(data[0].keys())
-        if not data[0]:
+        if not data:
             return json.loads({})
         return json.loads(data[0]['json_data'])
 
