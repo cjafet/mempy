@@ -88,9 +88,10 @@ def cache_api():
 @is_cache_enabled
 def invalidate_cache_api():
     """API to Invalidate cache key"""
+    
     cache = request.args.get("cache")
-
     key = request.args.get("key")
+
     # Check if cache key is not empty
     if not key:
         return build_error_message(400, BAD_REQUEST, BAD_REQUEST_MESSAGE_INVALID_KEY, "/api/cache-invalidation")
@@ -98,14 +99,16 @@ def invalidate_cache_api():
     with cache_lock:
         # Add to helper as get_cache
         try:
-            for item in USER_CACHE:
-                if item["cache"] == cache and item["objects"]:
-                    for index,obj in enumerate(item["objects"]):
-                        if obj["key"] == key:
-                            print(obj["key"])
-                            item["objects"].pop(index)
-                            return {"status": 204}
-                    return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/cache-invalidation")
-            return build_error_message_with_detail(404, NOT_FOUND, NOT_FOUND_MESSAGE, "Cache " + request.args.get("cache") + " not found.", "/api/cache-invalidation")
+            # db.execute(f"DROP TABLE {cache} WHERE cache_name = ?", (cache,))
+            # TO-DO Remove this select extra call
+            user_cache_id = db.execute("SELECT id FROM user_cache WHERE cache_name= ?", cache)
+            print("user_cahce_id", user_cache_id)
+            if not user_cache_id:
+                return build_error_message_with_detail(404, NOT_FOUND, NOT_FOUND_MESSAGE, "Cache " + request.args.get("cache") + " not found.", "/api/cache-invalidation")
+
+            db.execute("DELETE FROM json_table WHERE cache_key= ? and user_cache_id= ?", key, user_cache_id[0]['id'])
+            # return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/cache-invalidation")
+            return {"status": 204}
+
         except (ValueError, TypeError):
             return build_error_message(500, SERVER_ERROR, SERVER_ERROR_MESSAGE, "/api/cache-invalidation")
