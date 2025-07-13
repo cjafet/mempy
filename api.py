@@ -79,7 +79,7 @@ def cache_api():
         #         handle_ttl(item)
         #         return build_error_message(404, NOT_FOUND, NOT_FOUND_MESSAGE, "/api/get-cache")
     
-        print(data[0].keys())
+        # print(data[0].keys())
         return json.loads(data[0]['json_data'])
 
 @apis.route("/api/cache-invalidation", methods=["GET"])
