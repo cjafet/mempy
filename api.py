@@ -71,7 +71,6 @@ def cache_api():
         print("user_cahce_id", user_cache_id)
         data = db.execute("SELECT json_data FROM json_table WHERE cache_key= ? and user_cache_id= ?", key, user_cache_id[0]['id'])
         print("cache get response", data)
-        print("json data response", data[0])
         # json_data = data.decode('utf-8')
         # Handle ttl logic
         # for item in USER_CACHE:
