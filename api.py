@@ -81,7 +81,7 @@ def cache_api():
     
         # print(data[0].keys())
         if not data:
-            return json.loads({})
+            return jsonify({})
         return json.loads(data[0]['json_data'])
 
 @apis.route("/api/cache-invalidation", methods=["GET"])
